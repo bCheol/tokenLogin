@@ -1,0 +1,81 @@
+############################################
+# Spring Boot (Gradle)
+############################################
+HELP.md
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+############################################
+# Next.js / Node
+############################################
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+**/.yarn/install-state.gz
+
+# build output
+.next/
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+# testing
+coverage/
+
+# debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+############################################
+# Environment / Secrets
+############################################
+.env*.local
+*.pem
+
+############################################
+# IDE
+############################################
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+
+### STS / Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+############################################
+# OS
+############################################
+.DS_Store

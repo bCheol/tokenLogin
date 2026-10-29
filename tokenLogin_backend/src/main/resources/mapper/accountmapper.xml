@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.login.mapper.AccountMapper">
+
+    <select id="existId" resultType="int">
+        Select EXISTS (Select 1 From account_info Where account_id = #{id})
+    </select>
+
+    <select id="existNickName" resultType="int">
+        Select EXISTS (Select 1 From account_info Where nick_name = #{nickName})
+    </select>
+
+    <select id="existHsName" resultType="int">
+        Select EXISTS (Select 1 From account_info Where hs_name = #{hsName})
+    </select>
+
+    <select id="existHsPhone" resultType="int">
+        Select EXISTS (Select 1 From account_info Where hs_phone = #{hsPhone})
+    </select>
+
+    <select id="selectId" resultType="com.example.login.dto.AccountInfo">
+        Select account_id, block From account_info Where hs_name = #{hsName} And hs_phone = #{hsPhone} And exist = 1
+    </select>
+
+    <select id="selectPassword" resultType="string">
+        Select password From account_info
+        Where account_id = #{id} And hs_name = #{hsName} And hs_phone = #{hsPhone} And exist = 1 And block = 0
+    </select>
+
+    <update id="insertPassword">
+        Update account_info Set password = #{password} Where account_id = #{id} And exist = 1 And block = 0
+    </update>
+
+    <insert id="insertAccount">
+        Insert into account_info (account_id, password, nick_name, name, hs_name, phone, hs_phone)
+        Values (#{id}, #{password}, #{nickName}, #{name}, #{hsName}, #{phone}, #{hsPhone})
+    </insert>
+
+    <select id="selectAccount" resultType="com.example.login.dto.AccountInfo">
+        Select account_id, password, role, nick_name, name, hs_name, phone, hs_phone
+        From account_info Where account_id = #{id} And exist = 1 And block = 0
+    </select>
+
+    <update id="updateAccount">
+        Update account_info
+        <set>
+            <if test="password != null and !password.isBlank()">password = #{password},</if>
+            <if test="nickName != null and !nickName.isBlank()">nick_name = #{nickName},</if>
+            <if test="name != null and !name.isBlank()">name = #{name},</if>
+            <if test="hsName != null and !hsName.isBlank()">hs_name = #{hsName},</if>
+            <if test="phone != null and !phone.isBlank()">phone = #{phone},</if>
+            <if test="hsPhone != null and !hsPhone.isBlank()">hs_phone = #{hsPhone},</if>
+        </set>
+        Where account_id = #{id} And exist = 1 And block = 0
+    </update>
+
+    <update id="withdrawAccount">
+        Update account_info
+        Set exist = 0
+        Where account_id = #{id}
+    </update>
+
+    <select id="selectRefreshToken" resultType="string">
+        Select refresh_token From refresh_token_info Where account_id = #{id}
+    </select>
+
+    <insert id="insertRefreshToken">
+        Insert Into refresh_token_info (account_id, refresh_token)
+        Values (#{id}, #{refreshToken})
+    </insert>
+
+    <update id="updateRefreshToken">
+        Update refresh_token_info Set refresh_token = #{refreshToken}
+        Where account_id = #{id}
+    </update>
+
+    <delete id="deleteRefreshToken">
+        Delete From refresh_token_info Where account_id = #{id}
+    </delete>
+</mapper>
