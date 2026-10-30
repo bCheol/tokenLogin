@@ -25,9 +25,8 @@ const nextConfig: NextConfig = {
       },
     },
   },
-
+  output: 'export',
   async rewrites() {
-    // 개발 환경에서만 프록시 적용
     if (process.env.NODE_ENV !== "development") return [];
     return [
       {
