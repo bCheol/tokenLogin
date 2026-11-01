@@ -3,7 +3,7 @@
 import Input from "@/components/form/input/InputField";
 import Button from "@/components/ui/button/Button";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { userStateStore } from '@/lib/userStateStore';
@@ -45,6 +45,24 @@ export default function SignInForm() {
       });
   }
 
+  const oauthLogin = () => {
+    window.open(`${process.env.NEXT_PUBLIC_API_URL}/oauth2/authorization/google`, 'googleLogin', 'width=500,height=600');
+  }
+
+  useEffect(() => {
+    const channel = new BroadcastChannel("oauth");
+
+    channel.onmessage = (e) => {
+      if (e.data?.type === "OAUTH_SUCCESS") {
+        localStorage.setItem('accessToken', e.data.accessToken);
+        router.push("/");
+      } else if (e.data?.type === "OAUTH_FAIL") {
+        alert("로그인에 실패했습니다");
+      }
+    };
+    return () => channel.close();
+  }, [router]);
+
   return (
     <div className="flex w-full flex-1 flex-col lg:w-1/2">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
@@ -83,9 +101,9 @@ export default function SignInForm() {
                   Sign In
                 </Button>
               </div>
-              {/*
               <div>
-                <button className="w-full inline-flex items-center justify-center gap-3 rounded-lg bg-gray-100 px-7 py-3 text-sm font-normal text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10">
+                <button className="w-full inline-flex items-center justify-center gap-3 rounded-lg bg-gray-100 px-7 py-3 text-sm font-normal text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10"
+                        onClick={()=>{oauthLogin()}}>
                   <svg
                     width="20"
                     height="20"
@@ -113,7 +131,6 @@ export default function SignInForm() {
                   Sign in with Google
                 </button>
               </div>
-              */}
             </div>
           </div>
         </div>

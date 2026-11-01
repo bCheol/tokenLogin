@@ -2,6 +2,7 @@ package com.example.login.controller;
 
 import com.example.login.config.TokenProvider;
 import com.example.login.dto.AccountInfo;
+import com.example.login.dto.OAuthInfo;
 import com.example.login.dto.ResponseData;
 import com.example.login.dto.UserState;
 import com.example.login.service.AccountService;
@@ -235,7 +236,7 @@ public class AccountController {
             } else if (result == 0) {
                 return new ResponseData(false, null);
             } else {
-                accountService.deleteRefreshToken(accountId);
+                accountService.deleteRefreshToken(null, accountId);
 
                 ResponseCookie responseCookie = ResponseCookie.from("reToken", "")
                         .path("/api")
@@ -258,8 +259,9 @@ public class AccountController {
             return new ResponseData(false, null);
 
         String accountId = tokenProvider.getUserId(reToken);
+        String provider = getProvider(accountId);
 
-        accountService.deleteRefreshToken(accountId);
+        accountService.deleteRefreshToken(provider, accountId);
         ResponseCookie responseCookie = ResponseCookie.from("reToken", "")
                 .path("/api")
                 .maxAge(0)
@@ -278,18 +280,26 @@ public class AccountController {
         int checkToken = tokenProvider.validToken(reToken);
         String accountId = tokenProvider.getUserId(reToken);
         String role = (String) tokenProvider.getClaims(reToken).get("role");
+        String provider = getProvider(accountId);
+
         if (checkToken == 1) {
             String newAccessToken = tokenProvider.createAccessToken(accountId, role);
             AccountInfo accountInfo = accountService.getAccount(accountId);
-            UserState userState = new UserState(newAccessToken, accountId, accountInfo.getRole(), accountInfo.getNickName());
+            UserState userState;
+            if (accountInfo != null) {
+                userState = new UserState(newAccessToken, accountId, accountInfo.getRole(), accountInfo.getNickName());
+            } else {
+                OAuthInfo oAuthInfo = accountService.getOAuthInfo(provider, accountId);
+                userState = new UserState(newAccessToken, accountId, oAuthInfo.getRole(), oAuthInfo.getName());
+            }
             return new ResponseData(true, userState);
         } else if (checkToken == 0) {
-            String getRefreshToken = accountService.getRefreshToken(accountId);
+            String getRefreshToken = accountService.getRefreshToken(provider, accountId);
             String newRefreshToken = tokenProvider.createRefreshToken(accountId, role);
             if (!getRefreshToken.equals(newRefreshToken))
                 return new ResponseData(false, null);
 
-            accountService.updateRefreshToken(accountId, newRefreshToken);
+            accountService.updateRefreshToken(provider, accountId, newRefreshToken);
             String newAccessToken = tokenProvider.createAccessToken(accountId, role);
 
             ResponseCookie responseCookie = ResponseCookie.from("reToken", newRefreshToken)
@@ -305,7 +315,7 @@ public class AccountController {
             return new ResponseData(true, userState);
         }
 
-        accountService.deleteRefreshToken(accountId);
+        accountService.deleteRefreshToken(provider, accountId);
         ResponseCookie responseCookie = ResponseCookie.from("reToken", "")
                 .path("/api")
                 .maxAge(0)
@@ -341,5 +351,15 @@ public class AccountController {
             return true;
 
         return str.matches("^[0-9]+$");
+    }
+
+    public String getProvider(String accountId) {
+        String[] providerList = { "gmail" };
+        for (String data: providerList) {
+            if (accountId.contains(data)) {
+                return data;
+            }
+        }
+        return null;
     }
 }

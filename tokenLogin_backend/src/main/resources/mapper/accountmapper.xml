@@ -62,20 +62,49 @@
     </update>
 
     <select id="selectRefreshToken" resultType="string">
-        Select refresh_token From refresh_token_info Where account_id = #{id}
+        Select refresh_token From refresh_token_info Where account_id = #{id} and provider = #{provider}
     </select>
 
     <insert id="insertRefreshToken">
-        Insert Into refresh_token_info (account_id, refresh_token)
-        Values (#{id}, #{refreshToken})
+        Insert Into refresh_token_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="provider != null">provider,</if>
+            account_id, refresh_token
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="provider != null">#{provider},</if>
+            #{id}, #{refreshToken}
+        </trim>
     </insert>
 
     <update id="updateRefreshToken">
         Update refresh_token_info Set refresh_token = #{refreshToken}
-        Where account_id = #{id}
+        Where account_id = #{id} and provider = #{provider}
     </update>
 
     <delete id="deleteRefreshToken">
-        Delete From refresh_token_info Where account_id = #{id}
+        Delete From refresh_token_info Where account_id = #{id} and provider = #{provider}
     </delete>
+
+    <select id="existsOAuth" resultType="int">
+        Select EXISTS (Select 1 From oauth_info Where provider = #{provider} And email = #{email})
+    </select>
+
+    <select id="selectOAuth" resultType="com.example.login.dto.OAuthInfo">
+        Select provider, provider_id, email, role, name From oauth_info Where provider = #{provider} And email = #{email}
+    </select>
+
+    <insert id="insertOAuth">
+        Insert into oauth_info (provider, provider_id, email, name)
+        Value (#{provider}, #{providerId}, #{email}, #{name})
+    </insert>
+
+    <update id="updateOAuth">
+        Update oauth_info
+        <set>
+            <if test="name != null and !name.isBlank()">name = #{name}</if>
+        </set>
+        Where provider = #{provider} And provider_id = #{providerId};
+    </update>
+
 </mapper>
