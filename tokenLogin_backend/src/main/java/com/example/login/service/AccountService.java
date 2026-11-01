@@ -3,6 +3,7 @@ package com.example.login.service;
 import com.example.login.config.AesUtil;
 import com.example.login.config.TokenProvider;
 import com.example.login.dto.AccountInfo;
+import com.example.login.dto.OAuthInfo;
 import com.example.login.mapper.AccountMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -113,7 +114,6 @@ public class AccountService {
     }
 
     public AccountInfo getAccount(String id) {
-
         return accountMapper.selectAccount(id);
     }
 
@@ -133,9 +133,9 @@ public class AccountService {
             String refreshToken = tokenProvider.createRefreshToken(accountInfo.getAccountId(), accountInfo.getRole());
 
             try {
-                accountMapper.insertRefreshToken(accountInfo.getAccountId(), refreshToken);
+                accountMapper.insertRefreshToken(null, accountInfo.getAccountId(), refreshToken);
             } catch (DuplicateKeyException e) {
-                accountMapper.updateRefreshToken(accountInfo.getAccountId(), refreshToken);
+                accountMapper.updateRefreshToken(null, accountInfo.getAccountId(), refreshToken);
             }
 
             map.put("result", true);
@@ -150,7 +150,6 @@ public class AccountService {
         }
         return map;
     }
-
 
     public AccountInfo getAccountProfile(String id) {
 
@@ -210,16 +209,20 @@ public class AccountService {
         }
     }
 
-    public String getRefreshToken(String id) {
-        return accountMapper.selectRefreshToken(id);
+    public String getRefreshToken(String provider, String id) {
+        return accountMapper.selectRefreshToken(provider, id);
     }
 
-    public int updateRefreshToken(String id, String token) {
-        return accountMapper.updateRefreshToken(id, token);
+    public int updateRefreshToken(String provider, String id, String token) {
+        return accountMapper.updateRefreshToken(provider, id, token);
     }
 
-    public int deleteRefreshToken(String id) {
-        return accountMapper.deleteRefreshToken(id);
+    public int deleteRefreshToken(String provider, String id) {
+        return accountMapper.deleteRefreshToken(provider, id);
+    }
+
+    public OAuthInfo getOAuthInfo(String provider, String email) {
+        return accountMapper.selectOAuth(provider, email);
     }
 
 }

@@ -1,5 +1,8 @@
 package com.example.login.config;
 
+import com.example.login.oauth.OAuth2AuthorizationRequestBasedOnCookieRepository;
+import com.example.login.oauth.OAuth2SuccessHandler;
+import com.example.login.oauth.OAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +20,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final TokenProvider tokenProvider;
+    private final OAuth2AuthorizationRequestBasedOnCookieRepository oAuth2AuthorizationRequestBasedOnCookieRepository;
+    private final OAuth2UserService oAuth2UserService;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -25,6 +31,15 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/account/**").authenticated()
                         .anyRequest().permitAll()
+                )
+                .oauth2Login(oauth ->oauth
+                        .authorizationEndpoint(endpoint -> endpoint
+                                .authorizationRequestRepository(oAuth2AuthorizationRequestBasedOnCookieRepository))
+                                .userInfoEndpoint(user ->  user
+                                        .userService(oAuth2UserService))
+                                .successHandler(oAuth2SuccessHandler)
+                                .failureUrl("http://localhost:3000/oauth/callback?error=true")
+//                                .failureUrl("/oauth/callback?error=true")
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)

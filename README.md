@@ -36,6 +36,7 @@ src/
 ## 기능
 - 회원가입 / 아이디 찾기 / 비밀번호 찾기
 - 로그인 / 로그아웃
+- 구글 OAuth 로그인
 - 내 정보 보기 및 수정
 
 ## 토큰 저장 위치
@@ -43,4 +44,4 @@ src/
 - refreshToken : HttpOnly 쿠키와 DB에 저장
 
 ## 테이블
-<img width="950" height="300" src="assets/erd_v1.png"/>
+<img width="950" height="350" src="assets/erd_v2.png"/>
