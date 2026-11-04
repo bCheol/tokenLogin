@@ -44,7 +44,7 @@ dependencies {
 }
 
 war {
-	archiveFileName = 'board.war'
+	archiveFileName = 'tokenLogin.war'
 }
 
 tasks.named('test') {

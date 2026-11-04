@@ -9,14 +9,14 @@ import java.util.Base64;
 
 public class CookieUtil {
 
-    public void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
+    public static void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
         Cookie cookie = new Cookie(name, value);
         cookie.setPath("/");
         cookie.setMaxAge(maxAge);
         response.addCookie(cookie);
     }
 
-    public void deleteCookie(HttpServletRequest request, HttpServletResponse response, String name) {
+    public static void deleteCookie(HttpServletRequest request, HttpServletResponse response, String name) {
         Cookie[] cookies = request.getCookies();;
         if (cookies == null) {
             return;
@@ -31,11 +31,11 @@ public class CookieUtil {
         }
     }
 
-    public String serialize(Object obj) {
+    public static String serialize(Object obj) {
         return Base64.getUrlEncoder().encodeToString(SerializationUtils.serialize(obj));
     }
 
-    public <T> T deserialize(Cookie cookie, Class<T> tClass) {
+    public static <T> T deserialize(Cookie cookie, Class<T> tClass) {
         return tClass.cast(SerializationUtils.deserialize(Base64.getUrlDecoder().decode(cookie.getValue())));
     }
 }
