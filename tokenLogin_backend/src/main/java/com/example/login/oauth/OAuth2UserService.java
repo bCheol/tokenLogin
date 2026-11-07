@@ -1,5 +1,6 @@
 package com.example.login.oauth;
 
+import com.example.login.dto.OAuthInfo;
 import com.example.login.mapper.AccountMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -21,20 +22,17 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
 
         OAuth2User user = super.loadUser(userRequest);
         String email = (String) user.getAttributes().get("email");
+        String provider = getProvider(email);
 
-        String provider = null;
-        String[] providerList = { "gmail" };
-        for (String data: providerList) {
-            if (email.contains(data)) {
-                provider = data;
-                break;
-            }
-        }
-
-        if (accountMapper.existsOAuth(provider, email) == 0) {
+        OAuthInfo oAuthInfo = accountMapper.selectOAuth(provider, email);
+        if (oAuthInfo == null) {
             saveOAuthInfo(0, provider, user);
         } else {
-            saveOAuthInfo(1, provider, user);
+            if (oAuthInfo.getExist() == 1) {
+                saveOAuthInfo(1, provider, user);
+            } else {
+                throw new OAuth2AuthenticationException("withdraw email");
+            }
         }
 
         return user;
@@ -48,8 +46,18 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         if (type == 0) {
             accountMapper.insertOAuth(provider, providerId, email, name);
         } else {
-            accountMapper.updateOAuth(provider, email, name);
+            accountMapper.updateOAuth(provider, providerId, name);
         }
+    }
+
+    public String getProvider(String accountId) {
+        String[] providerList = { "gmail" };
+        for (String data: providerList) {
+            if (accountId.contains(data)) {
+                return data;
+            }
+        }
+        return null;
     }
 
 }

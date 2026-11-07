@@ -1,4 +1,4 @@
-# 소개
+## 소개
 JWT 로그인 구현 프로젝트
 
 사용 기술 : Java, Spring Boot, Mybatis, MariaDB, Next.js

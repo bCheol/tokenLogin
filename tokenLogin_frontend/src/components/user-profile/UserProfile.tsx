@@ -12,10 +12,11 @@ import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 
 type InfoType = {
+    modify: boolean
     role: string;
     nickName: string;
     name: string;
-    phone: string;
+    contact: string;
 };
 
 export default function UserProfile() {
@@ -23,6 +24,7 @@ export default function UserProfile() {
     const router = useRouter();
     const { isOpen: isEdit, openModal: editOpen, closeModal: editClose } = useModal();
     const { isOpen: isWithdraw, openModal: withdrawOpen, closeModal: withdrawClose } = useModal();
+     const { isOpen: isWithdrawOAuth, openModal: withdrawOAuthOpen, closeModal: withdrawOAuthClose } = useModal();
     const userState = userStateStore();
     const storeAccountId = userStateStore((s) => s.accountId);
     const [info, setInfo] = useState<InfoType[]>([]);
@@ -73,7 +75,21 @@ export default function UserProfile() {
         });
     }
 
-    const withdraw = () => {
+    const checkWithdraw = () => {
+
+        if (info[0].modify) {
+            withdrawOpen();
+        } else {
+            withdrawOAuthOpen();
+        }
+    }
+
+    const withdrawAccount = () => {
+
+        if(!password) {
+            alert('비밀번호를 입력해주세요')
+            return;
+        }
 
         api.post('/api/account/withdraw',
             {
@@ -84,18 +100,39 @@ export default function UserProfile() {
         .then((response) => {
             const res = response.data;
             if (res.result) {
+                localStorage.removeItem('accessToken');
                 userState.deleteInfo();
                 withdrawClose();
-                alert('탈퇴가 완료됐습니다');
+                alert(res.message);
                 router.push('/');
             } else {
-                alert('탈퇴 실패했습니다');
+                alert(res.message);
             }
         })
         .catch((error) => {
             //console.log(error);
         });
-    }       
+    }
+
+    const withdrawOAuth = () => {
+
+        api.post('/api/account/withdraw-oauth')
+        .then((response) => {
+            const res = response.data;
+            if (res.result) {
+                localStorage.removeItem('accessToken');
+                userState.deleteInfo();
+                withdrawClose();
+                alert(res.message);
+                router.push('/');
+            } else {
+                alert(res.message);
+            }
+        })
+        .catch((error) => {
+            //console.log(error);
+        });
+    }
 
     useEffect(() => {
         if (!storeAccountId)
@@ -111,7 +148,7 @@ export default function UserProfile() {
                     <h3 className="mb-5 text-lg font-semibold text-gray-800 lg:mb-7 dark:text-white/90">
                         Profile
                     </h3>
-                    <Button size="sm" onClick={withdrawOpen}>
+                    <Button size="sm" onClick={() => checkWithdraw()}>
                         탈퇴
                     </Button>
                 </div>
@@ -124,7 +161,7 @@ export default function UserProfile() {
                                     </div>
                                     <div className="text-start">
                                         <h4 className="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">
-                                            {info[0]?.nickName} 님
+                                            {info[0]?.modify ? info[0]?.nickName : info[0]?.name} 님
                                         </h4>
                                     </div>
                                 </div>
@@ -149,15 +186,16 @@ export default function UserProfile() {
                                 </div>
                                 <div>
                                     <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                                        번호
+                                        연락처
                                     </p>
                                     <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                                        {info[0]?.phone}
+                                        {info[0]?.contact}
                                     </p>
                                 </div>
                             </div>
                         </div>
-                        <div>
+                        {info[0]?.modify ?
+                 
                             <button
                                 onClick={editOpen}
                                 className="flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 lg:inline-flex lg:w-auto dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200"
@@ -165,7 +203,9 @@ export default function UserProfile() {
                                 <PencilIcon className="size-5" />
                                 Edit
                             </button>
-                        </div>
+                  
+                        : ''
+                        }
                     </div>
                 </div>
                 <Modal isOpen={isEdit} onClose={editClose} className="m-4 max-w-[700px]">
@@ -202,7 +242,7 @@ export default function UserProfile() {
                                     <div className="col-span-2">
                                         <Label>번호</Label>
                                         <Input type="text" maxLength={11}
-                                            placeholder={info[0]?.phone} onChange={(e) => setPhone(e.target.value)} />
+                                            placeholder={info[0]?.contact} onChange={(e) => setPhone(e.target.value)} />
                                     </div>
                                 </div>
                             </div>
@@ -242,7 +282,27 @@ export default function UserProfile() {
                             <Button size="sm" variant="outline" onClick={withdrawClose}>
                                 Close
                             </Button>
-                            <Button size="sm" onClick={() => withdraw()}>
+                            <Button size="sm" onClick={() => withdrawAccount()}>
+                                탈퇴하기
+                            </Button>
+                        </div>
+                    </div>
+                </Modal>
+                <Modal isOpen={isWithdrawOAuth} onClose={withdrawOAuthClose} className="m-4 max-w-[700px]">
+                    <div className="relative no-scrollbar w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 lg:p-11 dark:bg-gray-900">
+                        <div className="px-2 pe-14">
+                            <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
+                                회원 탈퇴
+                            </h4>
+                            <p className="mb-6 text-sm text-gray-500 lg:mb-7 dark:text-gray-400">
+                                탈퇴하면 같은 정보로 가입할 수 없습니다.
+                            </p>
+                        </div>
+                        <div className="mt-6 flex items-center gap-3 px-2 lg:justify-end">
+                            <Button size="sm" variant="outline" onClick={withdrawOAuthClose}>
+                                Close
+                            </Button>
+                            <Button size="sm" onClick={() => withdrawOAuth()}>
                                 탈퇴하기
                             </Button>
                         </div>

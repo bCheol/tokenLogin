@@ -14,5 +14,6 @@ public class OAuthInfo {
     String email;
     String role;
     String name;
+    Integer exist;
 
 }
