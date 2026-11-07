@@ -35,7 +35,7 @@ api.interceptors.response.use((response) =>
 
     try {
       if (!validation) {
-        validation = axios.post('/api/validation', null, { withCredentials: true })
+        validation = axios.post('/api/validation')
         .then((response) => {
           const res = response.data;
           if (res.result) {

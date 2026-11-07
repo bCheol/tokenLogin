@@ -209,6 +209,15 @@ public class AccountService {
         }
     }
 
+    public boolean checkOAuth(String provider, String email) {
+        return accountMapper.existsOAuth(provider, email) == 1;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public boolean withdrawOAuth(String provider, String email) {
+        return accountMapper.withdrawOAuth(provider, email) == 1;
+    }
+
     public String getRefreshToken(String provider, String id) {
         return accountMapper.selectRefreshToken(provider, id);
     }

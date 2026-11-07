@@ -61,6 +61,35 @@
         Where account_id = #{id}
     </update>
 
+<!--    OAuth    -->
+    <select id="existsOAuth" resultType="int">
+        Select EXISTS (Select 1 From oauth_info Where provider = #{provider} And email = #{email})
+    </select>
+
+    <select id="selectOAuth" resultType="com.example.login.dto.OAuthInfo">
+        Select provider, provider_id, email, role, name, exist From oauth_info Where provider = #{provider} And email = #{email}
+    </select>
+
+    <insert id="insertOAuth">
+        Insert into oauth_info (provider, provider_id, email, name)
+        Value (#{provider}, #{providerId}, #{email}, #{name})
+    </insert>
+
+    <update id="updateOAuth">
+        Update oauth_info
+        <set>
+            <if test="name != null and !name.isBlank()">name = #{name}</if>
+        </set>
+        Where provider = #{provider} And provider_id = #{providerId};
+    </update>
+
+    <update id="withdrawOAuth">
+        Update oauth_info
+        Set exist = 0
+        Where provider = #{provider} And email = #{email};
+    </update>
+
+<!--    token   -->
     <select id="selectRefreshToken" resultType="string">
         Select refresh_token From refresh_token_info Where account_id = #{id} and provider = #{provider}
     </select>
@@ -85,26 +114,5 @@
     <delete id="deleteRefreshToken">
         Delete From refresh_token_info Where account_id = #{id} and provider = #{provider}
     </delete>
-
-    <select id="existsOAuth" resultType="int">
-        Select EXISTS (Select 1 From oauth_info Where provider = #{provider} And email = #{email})
-    </select>
-
-    <select id="selectOAuth" resultType="com.example.login.dto.OAuthInfo">
-        Select provider, provider_id, email, role, name From oauth_info Where provider = #{provider} And email = #{email}
-    </select>
-
-    <insert id="insertOAuth">
-        Insert into oauth_info (provider, provider_id, email, name)
-        Value (#{provider}, #{providerId}, #{email}, #{name})
-    </insert>
-
-    <update id="updateOAuth">
-        Update oauth_info
-        <set>
-            <if test="name != null and !name.isBlank()">name = #{name}</if>
-        </set>
-        Where provider = #{provider} And provider_id = #{providerId};
-    </update>
 
 </mapper>

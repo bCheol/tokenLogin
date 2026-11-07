@@ -160,13 +160,26 @@ public class AccountController {
         AccountInfo accountInfo = accountService.getAccountProfile(accountId);
 
         if (accountInfo != null) {
-            Map<String, String> result = new HashMap<>();
+            Map<String, Object> result = new HashMap<>();
+            result.put("modify", true);
             result.put("role", accountInfo.getRole());
             result.put("nickName", accountInfo.getNickName());
             result.put("name", accountInfo.getName());
-            result.put("phone", accountInfo.getPhone());
+            result.put("contact", accountInfo.getPhone());
 
             return new ResponseData(true, result);
+        } else {
+            String provider = getProvider(accountId);
+            OAuthInfo oAuthInfo = accountService.getOAuthInfo(provider, accountId);
+            if (oAuthInfo != null) {
+                Map<String, Object> result = new HashMap<>();
+                result.put("modify", false);
+                result.put("role", oAuthInfo.getRole());
+                result.put("name", oAuthInfo.getName());
+                result.put("contact", oAuthInfo.getEmail());
+
+                return new ResponseData(true, result);
+            }
         }
         return new ResponseData(false, null);
     }
@@ -215,7 +228,6 @@ public class AccountController {
         return new ResponseData(false, null);
     }
 
-
     @PostMapping("/account/withdraw")
     public ResponseData withdrawAccount(HttpServletResponse response, @AuthenticationPrincipal String authId, @RequestBody Map<String, String> body) {
 
@@ -253,7 +265,7 @@ public class AccountController {
     }
 
     @PostMapping("/logout")
-    public ResponseData logout(@CookieValue(name = "reToken", required = false) String reToken, HttpServletResponse response) {
+    public ResponseData logout(HttpServletResponse response, @CookieValue(name = "reToken", required = false) String reToken) {
 
         if (reToken == null)
             return new ResponseData(false, null);
@@ -271,8 +283,30 @@ public class AccountController {
         return new ResponseData(true, null);
     }
 
+    @PostMapping("/account/check-oauth")
+    public ResponseData checkOAuth(@AuthenticationPrincipal String authId) {
+
+        String provider = getProvider(authId);
+
+        if (accountService.checkOAuth(provider, authId))
+            return new ResponseData(true, null);
+
+        return new ResponseData(false, null);
+    }
+
+    @PostMapping("/account/withdraw-oauth")
+    public ResponseData withdrawOAuth(@AuthenticationPrincipal String authId) {
+
+        String provider = getProvider(authId);
+
+        if (accountService.withdrawOAuth(provider, authId))
+            return new ResponseData(true, "탈퇴되었습니다");
+
+        return new ResponseData(false, "탈퇴에 실패했습니다");
+    }
+
     @PostMapping("/validation")
-    public ResponseData validationToken(@CookieValue(name = "reToken", required = false) String reToken, HttpServletResponse response) {
+    public ResponseData validationToken(HttpServletResponse response, @CookieValue(name = "reToken", required = false) String reToken) {
 
         if (reToken == null)
             return new ResponseData(false, null);
