@@ -319,22 +319,24 @@ public class AccountController {
         if (checkToken == 1) {
             String newAccessToken = tokenProvider.createAccessToken(accountId, role);
             AccountInfo accountInfo = accountService.getAccount(accountId);
-            UserState userState;
+            UserState userState = null;
             if (accountInfo != null) {
                 userState = new UserState(newAccessToken, accountId, accountInfo.getRole(), accountInfo.getNickName());
             } else {
                 OAuthInfo oAuthInfo = accountService.getOAuthInfo(provider, accountId);
-                userState = new UserState(newAccessToken, accountId, oAuthInfo.getRole(), oAuthInfo.getName());
+                if (oAuthInfo != null) {
+                    userState = new UserState(newAccessToken, accountId, oAuthInfo.getRole(), oAuthInfo.getName());
+                }
             }
             return new ResponseData(true, userState);
         } else if (checkToken == 0) {
             String getRefreshToken = accountService.getRefreshToken(provider, accountId);
-            String newRefreshToken = tokenProvider.createRefreshToken(accountId, role);
-            if (!getRefreshToken.equals(newRefreshToken))
+
+            if (!reToken.equals(getRefreshToken))
                 return new ResponseData(false, null);
 
+            String newRefreshToken = tokenProvider.createRefreshToken(accountId, role);
             accountService.updateRefreshToken(provider, accountId, newRefreshToken);
-            String newAccessToken = tokenProvider.createAccessToken(accountId, role);
 
             ResponseCookie responseCookie = ResponseCookie.from("reToken", newRefreshToken)
                     .path("/api")
@@ -344,8 +346,11 @@ public class AccountController {
                     .maxAge(Duration.ofDays(7))
                     .build();
             response.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
+
             AccountInfo accountInfo = accountService.getAccount(accountId);
+            String newAccessToken = tokenProvider.createAccessToken(accountId, role);
             UserState userState = new UserState(newAccessToken, accountId, accountInfo.getRole(), accountInfo.getNickName());
+
             return new ResponseData(true, userState);
         }
 
