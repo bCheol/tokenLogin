@@ -140,14 +140,7 @@ public class AccountController {
         boolean result = (boolean) data.get("result");
         if (result) {
             String refreshToken = (String) data.get("refreshToken");
-            ResponseCookie responseCookie = ResponseCookie.from("reToken", refreshToken)
-                    .path("/api")
-                    .httpOnly(true)
-                    .secure(false)
-                    .sameSite("Lax")
-                    .maxAge(Duration.ofDays(7))
-                    .build();
-            response.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
+            setResponseCookieToken(response, refreshToken, Duration.ofDays(7));
             data.remove("refreshToken");
             return new ResponseData(result, data);
         }
@@ -249,12 +242,7 @@ public class AccountController {
                 return new ResponseData(false, null);
             } else {
                 accountService.deleteRefreshToken(null, accountId);
-
-                ResponseCookie responseCookie = ResponseCookie.from("reToken", "")
-                        .path("/api")
-                        .maxAge(0)
-                        .build();
-                response.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
+                setResponseCookieToken(response, "", Duration.ZERO);
 
                 return new ResponseData(true, "탈퇴되었습니다");
             }
@@ -274,11 +262,7 @@ public class AccountController {
         String provider = getProvider(accountId);
 
         accountService.deleteRefreshToken(provider, accountId);
-        ResponseCookie responseCookie = ResponseCookie.from("reToken", "")
-                .path("/api")
-                .maxAge(0)
-                .build();
-        response.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
+        setResponseCookieToken(response, "", Duration.ZERO);
 
         return new ResponseData(true, null);
     }
@@ -338,14 +322,7 @@ public class AccountController {
             String newRefreshToken = tokenProvider.createRefreshToken(accountId, role);
             accountService.updateRefreshToken(provider, accountId, newRefreshToken);
 
-            ResponseCookie responseCookie = ResponseCookie.from("reToken", newRefreshToken)
-                    .path("/api")
-                    .httpOnly(true)
-                    .secure(false)
-                    .sameSite("Lax")
-                    .maxAge(Duration.ofDays(7))
-                    .build();
-            response.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
+            setResponseCookieToken(response, newRefreshToken, Duration.ofDays(7));
 
             AccountInfo accountInfo = accountService.getAccount(accountId);
             String newAccessToken = tokenProvider.createAccessToken(accountId, role);
@@ -355,11 +332,7 @@ public class AccountController {
         }
 
         accountService.deleteRefreshToken(provider, accountId);
-        ResponseCookie responseCookie = ResponseCookie.from("reToken", "")
-                .path("/api")
-                .maxAge(0)
-                .build();
-        response.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
+        setResponseCookieToken(response, "", Duration.ZERO);
 
         return new ResponseData(false, null);
     }
@@ -390,6 +363,17 @@ public class AccountController {
             return true;
 
         return str.matches("^[0-9]+$");
+    }
+
+    public void setResponseCookieToken(HttpServletResponse response, String refreshToken, Duration age) {
+        ResponseCookie responseCookie = ResponseCookie.from("reToken", refreshToken)
+                .path("/api")
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("Lax")
+                .maxAge(age)
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
     }
 
     public String getProvider(String accountId) {

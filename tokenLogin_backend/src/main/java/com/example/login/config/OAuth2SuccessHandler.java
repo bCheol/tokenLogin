@@ -5,6 +5,7 @@ import com.example.login.mapper.AccountMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -20,6 +21,9 @@ import java.time.Duration;
 @Component
 @RequiredArgsConstructor
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+
+    @Value("${BASE_URL}")
+    String baseUrl;
 
     private final AccountMapper accountMapper;
     private final TokenProvider tokenProvider;
@@ -66,8 +70,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     }
 
     private String getSuccessUrl(String token) {
-        return UriComponentsBuilder.fromUriString("http://localhost:3000/oauth/callback")
-//        return UriComponentsBuilder.fromUriString("/oauth/callback")
+        return UriComponentsBuilder.fromUriString(baseUrl + "/oauth/callback")
                 .queryParam("accessToken", token)
                 .build()
                 .toUriString();

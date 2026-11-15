@@ -2,26 +2,23 @@ import axios from 'axios';
 import { userStateStore } from '@/lib/userStateStore';
 
 const api = axios.create({});
-  
+
 export default api;
 
-api.interceptors.request.use((request) =>
-  {
-    const accessToken = localStorage.getItem('accessToken');
+api.interceptors.request.use((request) => {
+  const accessToken = localStorage.getItem('accessToken');
+  if (accessToken != null)
+    request.headers.Authorization = 'Bearer ' + accessToken;
 
-    if (accessToken != null)
-      request.headers.Authorization = 'Bearer ' + accessToken;
-
-    return request;
-  }
+  return request;
+}
 );
 
-let validation:any = null;
+let validation: any = null;
 
-api.interceptors.response.use((response) =>
-  {
-    return response;
-  },
+api.interceptors.response.use((response) => {
+  return response;
+},
   async (error) => {
     const orgConfig = error.config;
 
@@ -32,7 +29,7 @@ api.interceptors.response.use((response) =>
       return Promise.reject(error);
 
     orgConfig._retry = true;
-
+    
     try {
       if (!validation) {
         validation = axios.post('/api/validation')
@@ -49,6 +46,8 @@ api.interceptors.response.use((response) =>
       }
       await validation;
     } catch (validationError) {
+      localStorage.removeItem('accessToken');
+      userStateStore.getState().deleteInfo();
       return Promise.reject(validationError);
     }
 
