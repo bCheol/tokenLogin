@@ -1,6 +1,5 @@
-package com.example.login.oauth;
+package com.example.login.config;
 
-import com.example.login.config.TokenProvider;
 import com.example.login.dto.OAuthInfo;
 import com.example.login.mapper.AccountMapper;
 import jakarta.servlet.http.HttpServletRequest;

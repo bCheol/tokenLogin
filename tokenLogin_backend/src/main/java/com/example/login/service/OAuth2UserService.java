@@ -1,4 +1,4 @@
-package com.example.login.oauth;
+package com.example.login.service;
 
 import com.example.login.dto.OAuthInfo;
 import com.example.login.mapper.AccountMapper;

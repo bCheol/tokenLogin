@@ -1,4 +1,4 @@
-package com.example.login.oauth;
+package com.example.login.config;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;

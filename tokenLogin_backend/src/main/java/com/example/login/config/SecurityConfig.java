@@ -1,8 +1,6 @@
 package com.example.login.config;
 
-import com.example.login.oauth.OAuth2AuthorizationRequestBasedOnCookieRepository;
-import com.example.login.oauth.OAuth2SuccessHandler;
-import com.example.login.oauth.OAuth2UserService;
+import com.example.login.service.OAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
